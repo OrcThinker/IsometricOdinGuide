@@ -1,0 +1,2 @@
+#+title: How to do isometric perspective for games
+#+description: This is a repo for the isometric tutorial. To find a code you want you may need to switch branch to the one that you are interested in
