@@ -45,12 +45,16 @@ main :: proc() {
 
 game :: proc() {
     rl.InitWindow(windowSize.x, windowSize.y, "iso guide pt. 1")
-    rl.SetTargetFPS(20)
+    rl.SetTargetFPS(targetFps)
+
+    sinIter : i32 = 0
 
     defer rl.CloseWindow()
     for !rl.WindowShouldClose(){
         rl.BeginDrawing()
         rl.ClearBackground({255,190,0,255})
+
+        sinIter += 2
 
 
         mousePosText:cstring = fmt.ctprintf("MousePos: %v", rl.GetMousePosition())
@@ -71,15 +75,52 @@ game :: proc() {
         // isoTilePos := IsoCoordToScreen(19,4,0)
         // RenderTile(isoTilePos, tileTexture, 4, false, true)
 
-        isTileHighlighted: bool = mouseTilePosition == {19,4}
-        isoTilePos := IsoCoordToScreen(19,4,0)
-        RenderTile(isoTilePos, tileTexture, 4, true, isTileHighlighted)
+        // isTileHighlighted: bool = mouseTilePosition == {19,4}
+        // isoTilePos := IsoCoordToScreen(19,4,0)
+        // RenderTile(isoTilePos, tileTexture, 4, true, isTileHighlighted)
 
         // isoTilePosBottom := IsoCoordToScreen(19,4,1)
         // RenderTile(isoTilePosBottom, tileTexture)
 
         // isoTilePosBottomRight := IsoCoordToScreen(20,4,0)
         // RenderTile(isoTilePosBottomRight, tileTexture)
+
+        // sinScaled :f32 = f32(sinIter)/ f32(targetFps) * 5
+        sinScaled :f32 = math.abs((f32(sinIter % 160)) - 80) / 16
+
+        //Synced 2 waves
+        maxValInt :i32= 36
+        minValInt :i32= 10
+        for x in i32(minValInt)..=i32(maxValInt) {
+            for y in i32(0)..=5 {
+                maxVal :f32= f32(maxValInt)
+                minVal :f32= f32(minValInt)
+                // heightVal := math.sin(f32(x) + sinScaled + f32(y) / 2)
+                //Peaks in middle
+                midVal :f32= (maxVal + minVal) / 2
+                //To pi -> 0 In middle now -> on sides reaches diff in max and min / 2
+                val : = math.abs(midVal - f32(x))
+                //This one is PI on sides
+                toSinVal := math.sin(math.PI * val / ((maxVal - minVal) / 2))
+
+                loopTilePos := IsoCoordToScreen(x,4+y,-1* (toSinVal * sinScaled + 2))
+                RenderTile(loopTilePos, tileTexture, 4, true, false)
+            }
+            for y in i32(0)..=5 {
+                maxVal :f32= f32(maxValInt)
+                minVal :f32= f32(minValInt)
+                // heightVal := math.sin(f32(x) + sinScaled + f32(y) / 2)
+                //Peaks in middle
+                midVal :f32= (maxVal + minVal) / 2
+                //To pi -> 0 In middle now -> on sides reaches diff in max and min / 2
+                val : = math.abs(midVal - f32(x))
+                //This one is PI on sides
+                toSinVal := math.sin(math.PI * val / ((maxVal - minVal) / 2))
+
+                loopTilePos := IsoCoordToScreen(x,4+y,(toSinVal * sinScaled) * math.abs(f32(y)-2) / 5)
+                RenderTile(loopTilePos, tileTexture, 2, true, false)
+            }
+        }
 
         defer
         {
@@ -90,18 +131,10 @@ game :: proc() {
                 fmt.println(x)
                 lineStart1 := IsoCoordToScreen(-100,x,0)
                 lineEnd1 := IsoCoordToScreen(100, x, 0)
-                // rl.DrawLine(i32(lineStart1.x), i32(lineStart1.y + 16), i32(lineEnd1.x), i32(lineEnd1.y + 16), rl.PINK)
-                rl.DrawLineEx({f32(lineStart1.x), f32(lineStart1.y + 16)}, {f32(lineEnd1.x), f32(lineEnd1.y + 16)},3, rl.PINK)
-                rl.DrawLineEx({f32(lineStart1.x), -1 * f32(lineStart1.y + 16)}, {f32(lineEnd1.x), -1 * f32(lineEnd1.y + 16)},3, rl.PINK)
-
-
-                // lineStart2 := WorldToIsoCoord(x, -10,0)
-                // lineEnd2 := WorldToIsoCoord(x, 100, 0)
-                // rl.DrawLine(i32(lineStart2.x), i32(lineStart2.y + 16), i32(lineEnd2.x), i32(lineEnd2.y + 16), rl.PINK)
-                // rl.DrawLineEx({f32(lineStart2.x), f32(lineStart2.y + 16)}, {f32(lineEnd2.x), f32(lineEnd2.y + 16)},3, rl.PINK)
+                // rl.DrawLineEx({f32(lineStart1.x), f32(lineStart1.y + 16)}, {f32(lineEnd1.x), f32(lineEnd1.y + 16)},3, rl.PINK)
+                // rl.DrawLineEx({f32(lineStart1.x), -1 * f32(lineStart1.y + 16)}, {f32(lineEnd1.x), -1 * f32(lineEnd1.y + 16)},3, rl.PINK)
             }
         }
-
 
         rl.EndDrawing()
     }
@@ -133,9 +166,9 @@ ScreenToIsoCoord :: proc (screenX, screenY: f32, z:int=0) -> v2 {
 //I think the names should be reversed
 //Here we give isometric coords and get the screen ones thus
 //IsoCoordToScreen
-IsoCoordToScreen :: proc(isoX,isoY,isoZ: i32) -> v2 {
+IsoCoordToScreen :: proc(isoX,isoY: i32, isoZ: f32) -> v2 {
     x := (isoX - isoY) * tileSize.x/2
-    y := (isoX + isoY - isoZ) * tileSize.y/2
+    y := (isoX + isoY) * tileSize.y/2 - i32(isoZ * f32(levelHeight))
     return {x,y}
 }
 
