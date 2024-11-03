@@ -91,36 +91,56 @@ game :: proc() {
         //Synced 2 waves
         maxValInt :i32= 36
         minValInt :i32= 10
+        // for x in i32(minValInt)..=i32(maxValInt) {
+        //     for y in i32(0)..=5 {
+        //         maxVal :f32= f32(maxValInt)
+        //         minVal :f32= f32(minValInt)
+        //         // heightVal := math.sin(f32(x) + sinScaled + f32(y) / 2)
+        //         //Peaks in middle
+        //         midVal :f32= (maxVal + minVal) / 2
+        //         //To pi -> 0 In middle now -> on sides reaches diff in max and min / 2
+        //         val : = math.abs(midVal - f32(x))
+        //         //This one is PI on sides
+        //         toSinVal := math.sin(math.PI * val / ((maxVal - minVal) / 2))
+
+        //         loopTilePos := IsoCoordToScreen(x,4+y,-1* (toSinVal * sinScaled + 2))
+        //         RenderTile(loopTilePos, tileTexture, 4, true, false)
+        //     }
+        //     for y in i32(0)..=5 {
+        //         maxVal :f32= f32(maxValInt)
+        //         minVal :f32= f32(minValInt)
+        //         // heightVal := math.sin(f32(x) + sinScaled + f32(y) / 2)
+        //         //Peaks in middle
+        //         midVal :f32= (maxVal + minVal) / 2
+        //         //To pi -> 0 In middle now -> on sides reaches diff in max and min / 2
+        //         val : = math.abs(midVal - f32(x))
+        //         //This one is PI on sides
+        //         toSinVal := math.sin(math.PI * val / ((maxVal - minVal) / 2))
+
+        //         loopTilePos := IsoCoordToScreen(x,4+y,(toSinVal * sinScaled) * math.abs(f32(y)-2) / 5)
+        //         RenderTile(loopTilePos, tileTexture, 2, true, false)
+        //     }
+        // }
+
         for x in i32(minValInt)..=i32(maxValInt) {
             for y in i32(0)..=5 {
-                maxVal :f32= f32(maxValInt)
-                minVal :f32= f32(minValInt)
-                // heightVal := math.sin(f32(x) + sinScaled + f32(y) / 2)
-                //Peaks in middle
-                midVal :f32= (maxVal + minVal) / 2
-                //To pi -> 0 In middle now -> on sides reaches diff in max and min / 2
-                val : = math.abs(midVal - f32(x))
-                //This one is PI on sides
-                toSinVal := math.sin(math.PI * val / ((maxVal - minVal) / 2))
 
-                loopTilePos := IsoCoordToScreen(x,4+y,-1* (toSinVal * sinScaled + 2))
+                toSinVal := math.sin(math.PI * f32(x) / 6 + f32(sinIter) / 36)
+
+                loopTilePos := IsoCoordToScreen(x,4+y, toSinVal * 2)
+                loopTilePos2 := IsoCoordToScreen(x,4+y, toSinVal * 2 + 4)
+                loopTilePos3 := IsoCoordToScreen(x,4+y, toSinVal * 2 + 8)
+                loopTilePos4 := IsoCoordToScreen(x,4+y, toSinVal * 2 + 12)
                 RenderTile(loopTilePos, tileTexture, 4, true, false)
+                RenderTile(loopTilePos2, tileTexture, 1, true, false)
+                RenderTile(loopTilePos3, tileTexture, 3, true, false)
+                RenderTile(loopTilePos4, tileTexture, 2, true, false)
             }
             for y in i32(0)..=5 {
-                maxVal :f32= f32(maxValInt)
-                minVal :f32= f32(minValInt)
-                // heightVal := math.sin(f32(x) + sinScaled + f32(y) / 2)
-                //Peaks in middle
-                midVal :f32= (maxVal + minVal) / 2
-                //To pi -> 0 In middle now -> on sides reaches diff in max and min / 2
-                val : = math.abs(midVal - f32(x))
-                //This one is PI on sides
-                toSinVal := math.sin(math.PI * val / ((maxVal - minVal) / 2))
 
-                loopTilePos := IsoCoordToScreen(x,4+y,(toSinVal * sinScaled) * math.abs(f32(y)-2) / 5)
-                RenderTile(loopTilePos, tileTexture, 2, true, false)
             }
         }
+
 
         defer
         {
