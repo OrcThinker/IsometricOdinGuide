@@ -40,6 +40,7 @@ windowSize:v2 = {1024,860}
 targetFps:i32= 60
 
 main :: proc() {
+    fmt.println("Programs starts here")
     game()
 }
 
@@ -52,45 +53,41 @@ game :: proc() {
     defer rl.CloseWindow()
     for !rl.WindowShouldClose(){
         rl.BeginDrawing()
-        rl.ClearBackground({255,190,0,255})
+        rl.ClearBackground({34,34,34,255})
+        // rl.ClearBackground({33,35,55,255})
 
         sinIter += 2
 
 
         mousePosText:cstring = fmt.ctprintf("MousePos: %v", rl.GetMousePosition())
-        defer rl.DrawText(mousePosText, 20,20, 16, {0,0,0,255})
+        defer rl.DrawText(mousePosText, 20,20, 16, {255,255,255,255})
 
         //This is for z = 0
         //-tileSize.x/2 cuz origin of the tile is in the middle
         //We can either offset render by the origin or detection
         mouseTilePosition := ScreenToIsoCoord(f32(rl.GetMouseX() - tileSize.x/2), f32(rl.GetMouseY()), 0)
         isoMousePosText:cstring = fmt.ctprintf("MousePos Iso: %v", mouseTilePosition)
-        defer rl.DrawText(isoMousePosText, 20,40, 16, {0,0,0,255})
+        defer rl.DrawText(isoMousePosText, 20,40, 16, {255,255,255,255})
 
-        tileTexture: rl.Texture2D = rl.LoadTexture("./shortTiles.png")
+        tileTexture: rl.Texture2D = rl.LoadTexture("./shortTilesOld.png")
+
         //Here we will draw tile on 19,4 tile
         // isoTilePosTopRight:= IsoCoordToScreen(19,3,0)
         // RenderTile(isoTilePosTopRight, tileTexture, 4)
 
         // isoTilePos := IsoCoordToScreen(19,4,0)
-        // RenderTile(isoTilePos, tileTexture, 4, false, true)
-
-        // isTileHighlighted: bool = mouseTilePosition == {19,4}
-        // isoTilePos := IsoCoordToScreen(19,4,0)
-        // RenderTile(isoTilePos, tileTexture, 4, true, isTileHighlighted)
-
-        // isoTilePosBottom := IsoCoordToScreen(19,4,1)
-        // RenderTile(isoTilePosBottom, tileTexture)
-
-        // isoTilePosBottomRight := IsoCoordToScreen(20,4,0)
-        // RenderTile(isoTilePosBottomRight, tileTexture)
+        // RenderTile(isoTilePos, tileTexture, 4, false, false)
 
         // sinScaled :f32 = f32(sinIter)/ f32(targetFps) * 5
         sinScaled :f32 = math.abs((f32(sinIter % 160)) - 80) / 16
 
+        // maxValInt :i32= 36
+        // minValInt :i32= 10
+        // maxValInt :i32= 32
+        // minValInt :i32= 12
+
+
         //Synced 2 waves
-        maxValInt :i32= 36
-        minValInt :i32= 10
         // for x in i32(minValInt)..=i32(maxValInt) {
         //     for y in i32(0)..=5 {
         //         maxVal :f32= f32(maxValInt)
@@ -122,22 +119,33 @@ game :: proc() {
         //     }
         // }
 
+        maxValInt :i32= 32
+        minValInt :i32= 12
+
         for x in i32(minValInt)..=i32(maxValInt) {
             for y in i32(0)..=5 {
 
-                toSinVal := math.sin(math.PI * f32(x) / 6 + f32(sinIter) / 36)
+                //PI * x/6 cuz sin repeats every PI when in abs
+                //+ iter / 36 is just how fast it animates
+                rippleSize :f32= 6
+                animationSpeed := f32(sinIter) / 50
+                toSinVal := math.sin(math.PI * f32(x) / rippleSize + animationSpeed)
+                rippleHeight :f32 = 2
 
-                loopTilePos := IsoCoordToScreen(x,4+y, toSinVal * 2)
-                loopTilePos2 := IsoCoordToScreen(x,4+y, toSinVal * 2 + 4)
-                loopTilePos3 := IsoCoordToScreen(x,4+y, toSinVal * 2 + 8)
-                loopTilePos4 := IsoCoordToScreen(x,4+y, toSinVal * 2 + 12)
+                loopTilePos := IsoCoordToScreen(x,4+y, toSinVal * rippleHeight)
+                loopTilePos2 := IsoCoordToScreen(x,4+y, toSinVal * rippleHeight + 4)
+                loopTilePos3 := IsoCoordToScreen(x,4+y, toSinVal * rippleHeight + 8)
+                loopTilePos4 := IsoCoordToScreen(x,4+y, toSinVal * rippleHeight + 12)
+                loopTilePos5 := IsoCoordToScreen(x,4+y, toSinVal * rippleHeight + 16)
+                loopTilePos6 := IsoCoordToScreen(x,4+y, toSinVal * rippleHeight - 4)
+                loopTilePos7 := IsoCoordToScreen(x,4+y, toSinVal * rippleHeight - 8)
                 RenderTile(loopTilePos, tileTexture, 4, true, false)
                 RenderTile(loopTilePos2, tileTexture, 1, true, false)
                 RenderTile(loopTilePos3, tileTexture, 3, true, false)
                 RenderTile(loopTilePos4, tileTexture, 2, true, false)
-            }
-            for y in i32(0)..=5 {
-
+                RenderTile(loopTilePos5, tileTexture, 4, true, false)
+                RenderTile(loopTilePos6, tileTexture, 1, true, false)
+                RenderTile(loopTilePos7, tileTexture, 3, true, false)
             }
         }
 
@@ -148,7 +156,6 @@ game :: proc() {
             //Main line should be from top left to bottom right
             //Sec line should be same on X but flipped Y
             for x in i32(-100) ..=100 {
-                fmt.println(x)
                 lineStart1 := IsoCoordToScreen(-100,x,0)
                 lineEnd1 := IsoCoordToScreen(100, x, 0)
                 // rl.DrawLineEx({f32(lineStart1.x), f32(lineStart1.y + 16)}, {f32(lineEnd1.x), f32(lineEnd1.y + 16)},3, rl.PINK)
@@ -160,13 +167,12 @@ game :: proc() {
     }
 }
 
-RenderTile :: proc (pos:v2, tileTexture:rl.Texture, textureNr: i32 = 1, renderWithGrid:bool = true, highlighted: bool = false){
-    //This probably should ignore x
+RenderTile :: proc (pos:v2, tileTexture:rl.Texture, textureNr: i32 = 1,
+                    renderWithGrid:bool = true, highlighted: bool = false){
     tilePlacementInAtlas:v2 = {0, (tileSize.y + levelHeight) * textureNr}
-    imageRect:rl.Rectangle = {f32(tilePlacementInAtlas.x), f32(tilePlacementInAtlas.y), f32(tileSize.x), f32(tileSize.y + levelHeight)}
-    // color:= rl.WHITE
+    imageRect:rl.Rectangle = {f32(tilePlacementInAtlas.x), f32(tilePlacementInAtlas.y),
+                              f32(tileSize.x), f32(tileSize.y + levelHeight)}
     color:rl.Color = highlighted ? rl.SKYBLUE : rl.WHITE
-    // color:rl.Color = highlighted ? rl.SKYBLUE : {255,255,255,20}
     rl.DrawTextureRec(tileTexture, imageRect, {f32(pos.x), f32(pos.y)}, color)
     if renderWithGrid {
         gridRectangle:rl.Rectangle = {0,0, f32(tileSize.x), f32(tileSize.y + levelHeight)}
@@ -183,9 +189,6 @@ ScreenToIsoCoord :: proc (screenX, screenY: f32, z:int=0) -> v2 {
     return {i32(isoX), i32(isoY)}
 }
 
-//I think the names should be reversed
-//Here we give isometric coords and get the screen ones thus
-//IsoCoordToScreen
 IsoCoordToScreen :: proc(isoX,isoY: i32, isoZ: f32) -> v2 {
     x := (isoX - isoY) * tileSize.x/2
     y := (isoX + isoY) * tileSize.y/2 - i32(isoZ * f32(levelHeight))
